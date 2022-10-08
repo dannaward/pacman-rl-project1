@@ -326,15 +326,17 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        return (self.startingPosition, self.initialState)
+        return self.startingPosition, self.initialState
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        for item in state[1]:
-            if item == 0:
+        visited_corners = state[1]
+
+        for visited in visited_corners:
+            if not visited:
                 return False
 
         return True
@@ -362,8 +364,13 @@ class CornersProblem(search.SearchProblem):
             next_x, next_y = int(x + dx), int(y + dy)
 
             if not self.walls[next_x][next_y]:
-                next_state, cost = self.getNextState(state, action)
-                children.append(next_state, action, cost)
+                if (next_x, next_y) in self.corners:
+                    corner[self.corners.index((next_x, next_y))] = 1
+
+                next_state = ((next_x, next_y), corner)
+                cost = 1
+
+                children.append((next_state, action, cost))
 
         self._expanded += 1  # DO NOT CHANGE
         return children
