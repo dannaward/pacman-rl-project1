@@ -179,85 +179,32 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    # queueXY: ((x,y),[path]) #
-    queueXY = MyPriorityQueueWithFunction(problem, f)
+    start_node = problem.getStartState()
 
-    path = []  # Every state keeps it's path from the starting state
-    visited = []  # Visited states
-
-    # Check if initial state is goal state #
-    if problem.isGoalState(problem.getStartState()):
+    is_start_a_goal = problem.isGoalState(start_node)
+    if is_start_a_goal:
         return []
 
-    # Add initial state. Path is an empty list #
-    element = (problem.getStartState(), [])
+    queue = util.PriorityQueue()
+    visited = []
 
-    queueXY.push(element, heuristic)
+    queue.push((start_node, [], 0), 0)
 
-    while (True):
+    while not queue.isEmpty():
+        node, actions, cost = queue.pop()
 
-        # Terminate condition: can't find solution #
-        if queueXY.isEmpty():
-            return []
+        if node not in visited:
+            visited.append(node)
 
-        # Get informations of current state #
-        xy, path = queueXY.pop()  # Take position and path
+            if problem.isGoalState(node):
+                return actions
 
-        # State is already been visited. A path with lower cost has previously
-        # been found. Overpass this state
-        if xy in visited:
-            continue
-
-        visited.append(xy)
-
-        # Terminate condition: reach goal #
-        if problem.isGoalState(xy):
-            return path
-
-        # Get successors of current state #
-        succ = problem.expand(xy)
-
-        # Add new states in queue and fix their path #
-        if succ:
-            for item in succ:
-                if item[0] not in visited:
-                    # Like previous algorithms: we should check in this point if successor
-                    # is a goal state so as to follow lectures code
-
-                    newPath = path + [item[1]]  # Fix new path
-                    element = (item[0], newPath)
-                    queueXY.push(element, heuristic)
-
-
-# *** my code ***
-from util import PriorityQueue
-
-
-class MyPriorityQueueWithFunction(PriorityQueue):
-    """
-    Implements a priority queue with the same push/pop signature of the
-    Queue and the Stack classes. This is designed for drop-in replacement for
-    those two classes. The caller has to provide a priority function, which
-    extracts each item's priority.
-    """
-
-    def __init__(self, problem, priorityFunction):
-        "priorityFunction (item) -> priority"
-        self.priorityFunction = priorityFunction  # store the priority function
-        PriorityQueue.__init__(self)  # super-class initializer
-        self.problem = problem
-
-    def push(self, item, heuristic):
-        "Adds an item to the queue with priority from the priority function"
-        PriorityQueue.push(self, item, self.priorityFunction(self.problem, item, heuristic))
-
-
-# Calculate f(n) = g(n) + h(n) #
-def f(problem, state, heuristic):
-    return problem.getActionCost(state[1]) + heuristic(state[0], problem)
-
-
-# *** until here ***
+            for next_node, next_action, next_cost in problem.expand(node):
+                if next_node not in visited:
+                    temp_action = actions + [next_action]
+                    temp_cost = cost + next_cost
+                    heuristic_cost = temp_cost + heuristic(next_node, problem)
+                    queue.push((next_node, temp_action, temp_cost), heuristic_cost)
 
 # Abbreviations
 bfs = breadthFirstSearch
